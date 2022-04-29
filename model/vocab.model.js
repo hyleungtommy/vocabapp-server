@@ -7,7 +7,8 @@ var vocabSchema = new mongoose.Schema({
     sentence:String,
     translation:String,
     note:String,
-    langCode:String
+    langCode:String,
+    userId:mongoose.ObjectId
 });
 
 module.exports = mongoose.model('Vocab',vocabSchema);

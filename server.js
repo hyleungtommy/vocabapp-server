@@ -2,6 +2,8 @@ var express = require('express');
 var bodyParser = require('body-parser');
 const cors = require("cors");
 var vocab = require('./routes/vocab');
+var language = require('./routes/language');
+var user = require('./routes/user');
 var mongoose = require('mongoose');
 var app = express();
 
@@ -16,6 +18,8 @@ app.options("*", cors({ origin: 'http://localhost:3000', optionsSuccessStatus: 2
 app.use(cors({ origin: "http://localhost:3000", optionsSuccessStatus: 200 }));
 
 app.use('/vocab',vocab)
+app.use('/user',user)
+app.use('/language',language)
 
 app.get('/', function (req, res) {
    res.sendFile(__dirname + "/html/login.html")

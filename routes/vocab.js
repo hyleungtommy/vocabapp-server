@@ -15,7 +15,8 @@ router.post('/add-single',async function (req, res) {
          sentence:(req.body.sentence || ""),
          translation:(req.body.translation || ""),
          note:(req.body.note || ""),
-         langCode:req.body.langCode
+         langCode:req.body.langCode,
+         userId:req.body.userId
      })
      console.log("body=" + JSON.stringify(req.body));
      //console.log("add-vocab-signle vocab=" + vocab.vocab + " type=" + vocab.type + " meaning=" + vocab.meaning + " sentence=" + vocab.sentence + " translation=" + vocab.translation + " note=" + vocab.note)
@@ -41,6 +42,15 @@ router.post('/add-single',async function (req, res) {
      res.setHeader("Access-Control-Allow-Origin","*");
      res.end(JSON.stringify(items));
  })
+
+router.post('/list-langcode',async function(req,res){
+    console.log("list-langcode=" + req.body.userId + "," + req.body.langCode)
+    var items = await getVocabListByUserIdAndLangCode(req.body.userId,req.body.langCode);
+    console.log("items=" + items)
+    res.setHeader("Content-Type","text/html;charset=UTF-8");
+    res.setHeader("Access-Control-Allow-Origin","*");
+    res.end(JSON.stringify(items));
+})
  
  router.post('/get-single',async function(req,res){
      var item = await getVocabEntry(req.body._id);
@@ -59,7 +69,6 @@ router.post('/add-single',async function (req, res) {
          sentence:req.body.sentence,
          translation:req.body.translation,
          note:req.body.note,
-         langCode:req.body.langCode
      };
      console.log("update-vocab-single vocab=" + JSON.stringify(req.body))
      var item = await updateVocab(vocab);
@@ -100,6 +109,16 @@ async function getVocabList(){
 async function getVocabEntry(id){
     try{
         const item = await Vocab.findById(id)
+        return item;
+    }catch(err){
+        console.log(err);
+        return undefined;
+    }
+}
+
+async function getVocabListByUserIdAndLangCode(userId,langCode){
+    try{
+        const item = await Vocab.find({userId:userId,langCode:langCode})
         return item;
     }catch(err){
         console.log(err);
