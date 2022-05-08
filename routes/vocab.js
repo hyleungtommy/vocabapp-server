@@ -18,7 +18,7 @@ router.post('/add-single',async function (req, res) {
          langCode:req.body.langCode,
          userId:req.body.userId
      })
-     console.log("body=" + JSON.stringify(req.body));
+     //console.log("body=" + JSON.stringify(req.body));
      //console.log("add-vocab-signle vocab=" + vocab.vocab + " type=" + vocab.type + " meaning=" + vocab.meaning + " sentence=" + vocab.sentence + " translation=" + vocab.translation + " note=" + vocab.note)
      if(vocab){
          var item = await addVocab(vocab);
@@ -37,7 +37,7 @@ router.post('/add-single',async function (req, res) {
  
  router.get('/list',async function(req,res){
      var items = await getVocabList();
-     console.log("items=" + items)
+     //console.log("items=" + items)
      res.setHeader("Content-Type","text/html;charset=UTF-8");
      res.setHeader("Access-Control-Allow-Origin","*");
      res.end(JSON.stringify(items));
@@ -46,7 +46,7 @@ router.post('/add-single',async function (req, res) {
 router.post('/list-langcode',async function(req,res){
     console.log("list-langcode=" + req.body.userId + "," + req.body.langCode)
     var items = await getVocabListByUserIdAndLangCode(req.body.userId,req.body.langCode);
-    console.log("items=" + items)
+    //console.log("items=" + items)
     res.setHeader("Content-Type","text/html;charset=UTF-8");
     res.setHeader("Access-Control-Allow-Origin","*");
     res.end(JSON.stringify(items));
@@ -54,7 +54,7 @@ router.post('/list-langcode',async function(req,res){
  
  router.post('/get-single',async function(req,res){
      var item = await getVocabEntry(req.body._id);
-     console.log("items=" + item)
+     //console.log("items=" + item)
      res.setHeader("Content-Type","text/html;charset=UTF-8");
      res.end(JSON.stringify(item));
  })
@@ -68,9 +68,9 @@ router.post('/list-langcode',async function(req,res){
          meaning: req.body.meaning,
          sentence:req.body.sentence,
          translation:req.body.translation,
-         note:req.body.note,
+         note:req.body.note
      };
-     console.log("update-vocab-single vocab=" + JSON.stringify(req.body))
+     //console.log("update-vocab-single vocab=" + JSON.stringify(req.body))
      var item = await updateVocab(vocab);
      if(item)
         msg = "Vocab updated"
@@ -84,6 +84,13 @@ router.post('/list-langcode',async function(req,res){
      await deleteVocab(req.body._id)
      res.status(200)
      res.send("Vocab deleted");
+ })
+
+ router.post('/filter/type',async function(req,res){
+    var item = await filterByType(req.body.userId,req.body.langCode,req.body.type);
+    //console.log("items=" + item)
+    res.setHeader("Content-Type","text/html;charset=UTF-8");
+    res.end(JSON.stringify(item));
  })
 
 async function addVocab(vocab){
@@ -151,6 +158,21 @@ async function deleteVocab(id){
         await Vocab.findByIdAndRemove(id)
     }catch(err){
         console.log(err);
+    }
+}
+
+async function filterByType(userId,langCode,type){
+    try{
+        var item
+        if(type == ""){// treat as an all search
+            item = await getVocabListByUserIdAndLangCode(userId,langCode)
+        }else{
+            item = await Vocab.find({userId:userId,langCode:langCode,type:type})
+        }
+        return item;
+    }catch(err){
+        console.log(err);
+        return undefined;
     }
 }
 

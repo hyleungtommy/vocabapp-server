@@ -46,6 +46,48 @@ router.post('/update-langlist',async function(req,res){
      res.send(msg);
 })
 
+router.post('/create',async function(req,res){
+    var msg = "";
+    var item = await createUser(req.body.username,req.body.password,req.body.firstLang,req.body.motherLang);
+    if(item)
+        msg = "User created"
+     else 
+        msg = "Cannot create user"
+    res.status(200)
+    res.send(msg);
+})
+
+router.post('/check-exist',async function(req,res){
+    var msg = "";
+    var item = await getUserByName(req.body.username);
+    console.log(item)
+    if(item && item.length > 0)
+        msg = "Exist"
+     else 
+        msg = ""
+    res.status(200)
+    res.send(msg);
+})
+
+router.post('/login',async function(req,res){
+    var userId = await getUserId(req.body.username,req.body.password)
+    console.log(userId)
+    if(userId && userId.length > 0){
+        res.status(200)
+        res.send({
+            token: 'test123',
+            userId: userId
+        });
+    }else{
+        res.status(200)
+        res.send({
+            token: ''
+        });
+    }
+})
+
+
+
 async function getUserList(){
     try{
         const item = await User.find({})
@@ -59,6 +101,16 @@ async function getUserList(){
 async function getUserEntry(id){
     try{
         const item = await User.findById(id)
+        return item;
+    }catch(err){
+        console.log(err);
+        return undefined;
+    }
+}
+
+async function getUserByName(name){
+    try{
+        const item = await User.find({username:name})
         return item;
     }catch(err){
         console.log(err);
@@ -112,6 +164,35 @@ async function addNewLang(id,code){
         console.log(err);
         return undefined;
     }
+}
+
+async function createUser(name,pw,firstLang,motherLang){
+    var user = new User({
+        username:name,
+        password:pw,
+        langList:[firstLang],
+        motherLang:motherLang
+    })
+    try{
+        const item = await User.create(user)
+        return item;
+    }catch(err){
+        console.log(err);
+        return undefined;
+    }
+}
+
+async function getUserId(username,password){
+    console.log(username + " , " + password)
+    const item = await User.findOne({
+        username:username,
+        password:password
+    })
+    console.log(item)
+    if(item) 
+        return item._id + ""
+    else 
+        return ""
 }
 
 module.exports = router
