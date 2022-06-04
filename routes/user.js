@@ -1,10 +1,14 @@
 // list dependencies
 var express = require('express');
 var router = express.Router();
+var util = require('../util');
+var AWS = require("aws-sdk");
+var crypto = require("crypto")
 
 // add db & model dependencies
 var Language = require('../model/language.model');
 var User = require('../model/user.model');
+var dyanmoClient = require('../dynamoClient');
 
 router.get('/list',async function(req,res){
     var items = await getUserList();
@@ -89,6 +93,12 @@ router.post('/login',async function(req,res){
 
 
 async function getUserList(){
+    var param = {
+        TableName: "Users"
+    }
+    var result = await dyanmoClient.scan(param).promise()
+    return util.formatJSON(result.Items)
+    /*
     try{
         const item = await User.find({})
         return item;
@@ -96,9 +106,20 @@ async function getUserList(){
         console.log(err);
         return undefined;
     }
+    */
 }
 
 async function getUserEntry(id){
+    var param = {
+        TableName: "Users",
+        Key:{
+            '_id' : {S : id}
+        }
+    }
+    var result = await dyanmoClient.getItem(param).promise()
+    const newResult = AWS.DynamoDB.Converter.unmarshall(result.Item)
+    return newResult
+    /*
     try{
         const item = await User.findById(id)
         return item;
@@ -106,9 +127,26 @@ async function getUserEntry(id){
         console.log(err);
         return undefined;
     }
+    */
 }
 
 async function getUserByName(name){
+    var param = {
+        TableName: "Users",
+        FilterExpression: '#n = :name',
+        ExpressionAttributeValues: {
+            ':name' : {S : name}
+        },
+        ExpressionAttributeNames: {
+            '#n' : 'username'
+        }
+    }
+    var result = await dyanmoClient.scan(param).promise()
+    if(result.Items.length > 0)
+        return util.formatJSON(result.Items)
+    else
+        return undefined
+    /*
     try{
         const item = await User.find({username:name})
         return item;
@@ -116,6 +154,7 @@ async function getUserByName(name){
         console.log(err);
         return undefined;
     }
+    */
 }
 
 async function getLangListByUserId(id){
@@ -123,9 +162,26 @@ async function getLangListByUserId(id){
         const user = await getUserEntry(id)
         if(user){
             var langList = user.langList
-            console.log(langList)
-            const item = await Language.find({code:{$in:langList}})
-            return item;
+
+            var langObject = {}
+            var index = 0
+            langList.forEach((value)=>{
+                index ++;
+                var key = ':lang' + index
+                langObject[key] = {S : value}
+            })
+
+            var param = {
+                TableName: "languages",
+                FilterExpression: '#c IN (' + Object.keys(langObject) + ')',
+                ExpressionAttributeNames: {
+                    '#c' : 'code'
+                },
+                ExpressionAttributeValues: langObject
+            }
+
+            var result = await dyanmoClient.scan(param).promise()
+            return util.formatJSON(result.Items);
         }
     }catch(err){
         console.log(err);
@@ -138,9 +194,26 @@ async function getAvailableLangListByUserId(id){
         const user = await getUserEntry(id)
         if(user){
             var langList = user.langList
-            console.log(langList)
-            const item = await Language.find({code:{$nin:langList}})
-            return item;
+
+            var langObject = {}
+            var index = 0
+            langList.forEach((value)=>{
+                index ++;
+                var key = ':lang' + index
+                langObject[key] = {S : value}
+            })
+
+            var param = {
+                TableName: "languages",
+                FilterExpression: 'NOT (#c IN (' + Object.keys(langObject) + '))',
+                ExpressionAttributeNames: {
+                    '#c' : 'code'
+                },
+                ExpressionAttributeValues: langObject
+            }
+
+            var result = await dyanmoClient.scan(param).promise()
+            return util.formatJSON(result.Items);
         }
     }catch(err){
         console.log(err);
@@ -155,10 +228,26 @@ async function addNewLang(id,code){
         console.log(user)
         var langList = user.langList
         langList.push(code)
-        const updateDoc = {
-            langList : langList
+        
+        var newLangList = langList.map(function(value){
+            return {S : value}
+        })
+
+        var param = {
+            TableName: "Users",
+            UpdateExpression: 'SET #l = :langList',
+            Key:{
+                '_id' : {S : id}
+            },
+            ExpressionAttributeNames: {
+                '#l' : 'langList'
+            },
+            ExpressionAttributeValues: {
+                ':langList' : {L : newLangList}
+            }
         }
-        const item = await User.findByIdAndUpdate(id,updateDoc)
+
+        const item = await dyanmoClient.updateItem(param).promise()
         return item;
     }catch(err){
         console.log(err);
@@ -167,6 +256,26 @@ async function addNewLang(id,code){
 }
 
 async function createUser(name,pw,firstLang,motherLang){
+
+    var param = {
+        TableName: "Users",
+        Item:{
+            '_id' : {S : crypto.randomUUID()},
+            'username' : {S : name},
+            'password' : {S : pw},
+            'langList' : {L : []},
+            'motherLang' : {S : motherLang}
+        }
+    }
+    try{
+        const item = await dyanmoClient.putItem(param).promise()
+        return item;
+    }catch(err){
+        console.log(err);
+        return undefined;
+    }
+    
+    /*
     var user = new User({
         username:name,
         password:pw,
@@ -180,19 +289,38 @@ async function createUser(name,pw,firstLang,motherLang){
         console.log(err);
         return undefined;
     }
+    */
 }
 
 async function getUserId(username,password){
+
+    var param = {
+        TableName: "Users",
+        FilterExpression : "#u = :username AND #p = :password",
+        ExpressionAttributeNames: {
+            '#u' : 'username',
+            '#p' : 'password'
+        },
+        ExpressionAttributeValues: {
+            ':username' : {S : username},
+            ':password' : {S : password}
+        }
+    }
+    /*
     console.log(username + " , " + password)
     const item = await User.findOne({
         username:username,
         password:password
     })
     console.log(item)
-    if(item) 
-        return item._id + ""
+    */
+   const result = await dyanmoClient.scan(param).promise()
+   const item = result.Items
+    if(item.length > 0) 
+        return item[0]._id.S + ""
     else 
         return ""
+    
 }
 
 module.exports = router
