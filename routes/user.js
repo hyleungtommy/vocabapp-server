@@ -162,26 +162,27 @@ async function getLangListByUserId(id){
         const user = await getUserEntry(id)
         if(user){
             var langList = user.langList
-
-            var langObject = {}
-            var index = 0
-            langList.forEach((value)=>{
-                index ++;
-                var key = ':lang' + index
-                langObject[key] = {S : value}
-            })
-
-            var param = {
-                TableName: "languages",
-                FilterExpression: '#c IN (' + Object.keys(langObject) + ')',
-                ExpressionAttributeNames: {
-                    '#c' : 'code'
-                },
-                ExpressionAttributeValues: langObject
+            if(langList.length > 0){
+                var langObject = {}
+                var index = 0
+                langList.forEach((value)=>{
+                    index ++;
+                    var key = ':lang' + index
+                    langObject[key] = {S : value}
+                })
+    
+                var param = {
+                    TableName: "languages",
+                    FilterExpression: '#c IN (' + Object.keys(langObject) + ')',
+                    ExpressionAttributeNames: {
+                        '#c' : 'code'
+                    },
+                    ExpressionAttributeValues: langObject
+                }
+    
+                var result = await dyanmoClient.scan(param).promise()
+                return util.formatJSON(result.Items);
             }
-
-            var result = await dyanmoClient.scan(param).promise()
-            return util.formatJSON(result.Items);
         }
     }catch(err){
         console.log(err);
@@ -195,25 +196,33 @@ async function getAvailableLangListByUserId(id){
         if(user){
             var langList = user.langList
 
-            var langObject = {}
-            var index = 0
-            langList.forEach((value)=>{
-                index ++;
-                var key = ':lang' + index
-                langObject[key] = {S : value}
-            })
-
-            var param = {
-                TableName: "languages",
-                FilterExpression: 'NOT (#c IN (' + Object.keys(langObject) + '))',
-                ExpressionAttributeNames: {
-                    '#c' : 'code'
-                },
-                ExpressionAttributeValues: langObject
+            if(langList.length > 0){
+                var langObject = {}
+                var index = 0
+                langList.forEach((value)=>{
+                    index ++;
+                    var key = ':lang' + index
+                    langObject[key] = {S : value}
+                })
+    
+                var param = {
+                    TableName: "languages",
+                    FilterExpression: 'NOT (#c IN (' + Object.keys(langObject) + '))',
+                    ExpressionAttributeNames: {
+                        '#c' : 'code'
+                    },
+                    ExpressionAttributeValues: langObject
+                }
+    
+                var result = await dyanmoClient.scan(param).promise()
+                return util.formatJSON(result.Items);
+            }else{
+                var param = {
+                    TableName: "languages"
+                }
+                var result = await dyanmoClient.scan(param).promise()
+                return util.formatJSON(result.Items);
             }
-
-            var result = await dyanmoClient.scan(param).promise()
-            return util.formatJSON(result.Items);
         }
     }catch(err){
         console.log(err);

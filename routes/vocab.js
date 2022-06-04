@@ -34,7 +34,9 @@ router.post('/add-single',async function (req, res) {
         'note' : {S : (req.body.note || "")},
         'langCode' : {S : req.body.langCode},
         'userId' : {S : req.body.userId},
-        'correctAnswerCount' : {N : '0'}
+        'correctAnswerCount' : {N : '0'},
+        'createdAt' : {N : Date.now().toString()},
+        'updatedAt': {N : Date.now().toString()}
 
     }
      //console.log("body=" + JSON.stringify(req.body));
@@ -161,6 +163,7 @@ async function getVocabEntry(id){
 }
 
 async function getVocabListByUserIdAndLangCode(userId,langCode){
+    console.log("getVocabListByUserIdAndLangCode langCode=" + JSON.stringify(langCode))
     var param = {
         TableName: "Vocabs",
         FilterExpression : "#u = :userId AND #c = :langCode",
@@ -174,10 +177,15 @@ async function getVocabListByUserIdAndLangCode(userId,langCode){
         }
     }
     try{
-        //const item = await Vocab.find({userId:userId,langCode:langCode})
-        //return item;
-        const result = await dyanmoClient.scan(param).promise()
-        return util.formatJSON(result.Items)
+        if(userId && langCode){
+            const result = await dyanmoClient.scan(param).promise()
+            var items = util.formatJSON(result.Items)
+            items.sort((a,b) =>{
+                return b.createdAt - a.createdAt
+            })
+            return items
+        }
+        return []
     }catch(err){
         console.log(err);
         return undefined;
@@ -199,7 +207,7 @@ async function updateVocab(vocab){
     */
     var param = {
         TableName: "Vocabs",
-        UpdateExpression: 'SET #v = :vocab, #t = :type, #m = :meaning,#s = :sentence,#tr = :translation,#n = :note',
+        UpdateExpression: 'SET #v = :vocab, #t = :type, #m = :meaning,#s = :sentence,#tr = :translation,#n = :note,#u = :updatedAt',
         Key:{
             '_id' : {S : id}
         },
@@ -209,7 +217,8 @@ async function updateVocab(vocab){
             '#m' : 'meaning',
             '#s' : 'sentence',
             '#tr' : 'translation',
-            '#n' : 'note'
+            '#n' : 'note',
+            '#u' : 'updatedAt'
         },
         ExpressionAttributeValues: {
             ':vocab' : {S : vocab.vocab},
@@ -217,7 +226,8 @@ async function updateVocab(vocab){
             ':meaning' : {S : vocab.meaning},
             ':sentence' : {S : vocab.sentence},
             ':translation' : {S : vocab.translation},
-            ':note' : {S : vocab.note}
+            ':note' : {S : vocab.note},
+            ':updatedAt' : {N : Date.now().toString()}
         }
     }
     try{
@@ -269,6 +279,9 @@ async function filterByType(userId,langCode,type){
             //item = await Vocab.find({userId:userId,langCode:langCode,type:type})
             var result = await dyanmoClient.scan(param).promise()
             var item = util.formatJSON(result.Items)
+            item.sort((a,b) =>{
+                return b.createdAt - a.createdAt
+            })
         }
         return item;
     }catch(err){
