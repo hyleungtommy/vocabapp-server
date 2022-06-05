@@ -25,7 +25,7 @@ router.post('/add-single',async function (req, res) {
      })
      */
     var vocab = {
-        '_id' : {S : crypto.randomUUID()},
+        '_id' : {S : crypto.randomBytes(16).toString("hex")},
         'vocab' : {S : req.body.vocab},
         'type' : {S : req.body.type},
         'meaning' : {S : req.body.meaning},

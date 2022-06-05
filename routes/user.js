@@ -269,7 +269,7 @@ async function createUser(name,pw,firstLang,motherLang){
     var param = {
         TableName: "Users",
         Item:{
-            '_id' : {S : crypto.randomUUID()},
+            '_id' : {S : crypto.randomBytes(16).toString("hex")},
             'username' : {S : name},
             'password' : {S : pw},
             'langList' : {L : []},
