@@ -6,8 +6,8 @@ var AWS = require("aws-sdk");
 var crypto = require("crypto")
 
 // add db & model dependencies
-var Language = require('../model/language.model');
-var User = require('../model/user.model');
+//var Language = require('../model/language.model');
+//var User = require('../model/user.model');
 var dyanmoClient = require('../dynamoClient');
 
 router.get('/list',async function(req,res){

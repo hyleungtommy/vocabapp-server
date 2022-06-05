@@ -4,7 +4,7 @@ var util = require('../util');
 var router = express.Router();
 
 // add db & model dependencies
-var Language = require('../model/language.model');
+//var Language = require('../model/language.model');
 var dyanmoClient = require('../dynamoClient');
 
 router.get('/list',async function(req,res){

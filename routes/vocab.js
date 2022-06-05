@@ -6,8 +6,8 @@ var AWS = require("aws-sdk");
 var crypto = require("crypto")
 
 // add db & model dependencies
-var mongoose = require('mongoose');
-var Vocab = require('../model/vocab.model');
+//var mongoose = require('mongoose');
+//var Vocab = require('../model/vocab.model');
 var dyanmoClient = require('../dynamoClient');
 
 router.post('/add-single',async function (req, res) {
