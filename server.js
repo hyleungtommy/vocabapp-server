@@ -1,6 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-//const cors = require("cors");
+const cors = require("cors");
 var vocab = require('./routes/vocab');
 var language = require('./routes/language');
 var user = require('./routes/user');
@@ -14,8 +14,8 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 //var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(express.static(__dirname + '/html'));
-//app.options("*", cors({ origin: 'http://localhost:3000', optionsSuccessStatus: 200 }));
-//app.use(cors({ origin: "http://localhost:3000", optionsSuccessStatus: 200 }));
+app.options("*", cors({ origin: 'http://react-app-hyleungtommy.s3-website-us-east-1.amazonaws.com', optionsSuccessStatus: 200 }));
+app.use(cors({ origin: "http://react-app-hyleungtommy.s3-website-us-east-1.amazonaws.com", optionsSuccessStatus: 200 }));
 
 app.use('/vocab',vocab)
 app.use('/user',user)
