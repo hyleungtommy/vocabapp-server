@@ -1,0 +1,37 @@
+body{
+    font-family: "Lato", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.8;
+    font-weight: normal;
+    background: #f8f9fd;
+    color: gray;
+}
+
+.login-panel{
+    background: white;
+    margin-top: 7em;
+    border-radius: 0.25rem;
+    box-shadow: 0px 10px 34px -15px rgb(0 0 0 / 24%);
+}
+
+.btn-login{
+    width: 100%;
+    background: #01d28e !important;
+    border: 1px solid #01d28e !important;
+    color: #fff !important;
+    margin-bottom: 1em;
+    
+}
+
+#login a{
+    text-decoration: none;
+    color:gray;
+}
+
+.signup-link{
+    color: #01d28e !important;
+}
+
+#login{
+    padding: 1em 2em;
+}
