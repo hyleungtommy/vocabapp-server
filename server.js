@@ -4,6 +4,8 @@ const cors = require("cors");
 var vocab = require('./routes/vocab');
 var language = require('./routes/language');
 var user = require('./routes/user');
+var anime = require('./routes/anime');
+var season = require('./routes/season');
 //var mongoose = require('mongoose');
 var app = express();
 
@@ -20,6 +22,8 @@ app.use(cors({ origin: "http://react-app-hyleungtommy.s3-website-us-east-1.amazo
 app.use('/vocab',vocab)
 app.use('/user',user)
 app.use('/language',language)
+app.use('/anime',anime)
+app.use('/season',season)
 
 app.get('/', function (req, res) {
    res.send("Deploy success")
