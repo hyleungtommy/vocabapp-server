@@ -16,8 +16,7 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 //var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(express.static(__dirname + '/html'));
-app.options("*", cors({ origin: 'http://react-app-hyleungtommy.s3-website-us-east-1.amazonaws.com', optionsSuccessStatus: 200 }));
-app.use(cors({ origin: "http://react-app-hyleungtommy.s3-website-us-east-1.amazonaws.com", optionsSuccessStatus: 200 }));
+app.use("*", cors({ origin: ['http://react-app-hyleungtommy.s3-website-us-east-1.amazonaws.com','http://anirate-frontend.s3-website-us-east-1.amazonaws.com'], optionsSuccessStatus: 200 }));
 
 app.use('/vocab',vocab)
 app.use('/user',user)
